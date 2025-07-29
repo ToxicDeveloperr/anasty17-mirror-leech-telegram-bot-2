@@ -14,7 +14,7 @@ google-auth-httplib2
 google-auth-oauthlib
 gunicorn
 httpx
-jinja2
+Jinja2==3.0.3
 lxml
 natsort
 par2cmdline-turbo
