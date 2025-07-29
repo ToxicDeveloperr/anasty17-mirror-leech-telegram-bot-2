@@ -32,3 +32,8 @@ uvicorn
 uvloop
 xattr
 yt-dlp[default,curl-cffi]
+
+Flask==1.1.2
+
+werkzeug==2.0.2
+itsdangerous==2.0.1
