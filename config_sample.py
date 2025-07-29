@@ -1,18 +1,15 @@
-import os
-import json
-
 # REQUIRED CONFIG
-BOT_TOKEN = os.getenv("BOT_TOKEN", "6716467783:AAFLDqKMLbjDCWKowck0DJYxAYGedsvcj7w")
-OWNER_ID = int(os.getenv("OWNER_ID", 6018060368))
-TELEGRAM_API = int(os.getenv("TELEGRAM_API", 27710337))
-TELEGRAM_HASH = os.getenv("TELEGRAM_HASH", "354e1dd8e1e3041ee2145196da8d6aac")
+BOT_TOKEN = "6716467783:AAFLDqKMLbjDCWKowck0DJYxAYGedsvcj7w"
+OWNER_ID = 6018060368
+TELEGRAM_API = 27710337
+TELEGRAM_HASH = "354e1dd8e1e3041ee2145196da8d6aac"
 # OPTIONAL CONFIG
 TG_PROXY = {}
 USER_SESSION_STRING = ""
 CMD_SUFFIX = ""
 AUTHORIZED_CHATS = ""
 SUDO_USERS = ""
-DATABASE_URL = os.getenv("DATABASE_URL", "mongodb+srv://tejaschavan1110:cSxC44OLfIPxcXxp@cluster0.iu0f4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DATABASE_URL = "mongodb+srv://tejaschavan1110:cSxC44OLfIPxcXxp@cluster0.iu0f4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 STATUS_LIMIT = 4
 DEFAULT_UPLOAD = "rc"
 STATUS_UPDATE_INTERVAL = 15
