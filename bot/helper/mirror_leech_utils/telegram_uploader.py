@@ -37,7 +37,6 @@ from ..ext_utils.media_utils import (
     get_audio_thumbnail,
     get_multiple_frames_thumbnail,
 )
-from ..ext_utils.db_tracker import update_task_status, get_task
 
 LOGGER = getLogger(__name__)
 
