@@ -2,12 +2,15 @@ from pyrogram.filters import command, regex
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler, EditedMessageHandler
 
 from ..modules import *
+from ..modules.custom_leech_handler import add_handler as add_custom_leech_handler
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.filters import CustomFilters
 from .mltb_client import TgClient
 
 
 def add_handlers():
+    # Add custom leech handler
+    add_custom_leech_handler()
     TgClient.bot.add_handler(
         MessageHandler(
             authorize,
