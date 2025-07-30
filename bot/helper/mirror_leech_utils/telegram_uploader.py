@@ -37,7 +37,7 @@ from ..ext_utils.media_utils import (
     get_audio_thumbnail,
     get_multiple_frames_thumbnail,
 )
-from .upload_tracker import CustomTelegramUploader
+from ..ext_utils.db_tracker import update_task_status
 
 LOGGER = getLogger(__name__)
 
