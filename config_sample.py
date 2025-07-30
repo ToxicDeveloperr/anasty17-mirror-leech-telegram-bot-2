@@ -7,7 +7,7 @@ TELEGRAM_HASH = "354e1dd8e1e3041ee2145196da8d6aac"
 TG_PROXY = {}
 USER_SESSION_STRING = ""
 CMD_SUFFIX = ""
-AUTHORIZED_CHATS = ""
+AUTHORIZED_CHATS = "-1004898495389"
 SUDO_USERS = ""
 DATABASE_URL = "mongodb+srv://tejaschavan1110:cSxC44OLfIPxcXxp@cluster0.iu0f4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 STATUS_LIMIT = 4
