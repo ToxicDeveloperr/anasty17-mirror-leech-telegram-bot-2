@@ -64,11 +64,12 @@ async def handle_channel_leech(client, message):
             await sleep(3)
             
             # Get most recent message from data store channel
-            messages = await client.get_messages(DATA_STORE_CHANNEL, limit=1)
-            if not messages or not messages[0]:
+            # Using get_history which is the correct method for getting recent messages
+            async for message in client.get_chat_history(DATA_STORE_CHANNEL, limit=1):
+                file_msg = message
+                break
+            else:
                 raise Exception("Could not find uploaded file message")
-                
-            file_msg = messages[0]
             
             # Generate file link
             channel_id = str(DATA_STORE_CHANNEL)[4:] 
