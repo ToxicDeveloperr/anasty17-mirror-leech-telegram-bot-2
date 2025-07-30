@@ -12,9 +12,9 @@ from ..core.mltb_client import TgClient
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Configure your channel IDs here
-SOURCE_CHANNEL = -1002176533426  # Replace with your source channel ID
-DATA_STORE_CHANNEL = -1002464896968  # Replace with your data store channel ID 
-DESTINATION_CHANNEL = -1002487065354  # Replace with your destination channel ID
+SOURCE_CHANNEL = -100176533426  # Replace with your source channel ID (removed extra 2)
+DATA_STORE_CHANNEL = -100464896968  # Replace with your data store channel ID 
+DESTINATION_CHANNEL = -100487065354  # Replace with your destination channel ID
 
 class CustomLeechHandler:
     def __init__(self, client, message):
@@ -61,12 +61,14 @@ class CustomLeechHandler:
             await asyncio.sleep(5)  # Give some time for the upload to complete
             
             # Get the last message from data store channel
-            messages = await self.client.get_messages(DATA_STORE_CHANNEL, limit=1)
-            if not messages or len(messages) == 0:
+            file_msg = await self.client.get_history(DATA_STORE_CHANNEL, 1)
+            if not file_msg:
                 raise Exception("Failed to get uploaded file message")
                 
-            file_msg = messages[0]
-            file_link = f"https://t.me/c/{str(DATA_STORE_CHANNEL)[4:]}/{file_msg.id}"
+            file_msg = file_msg[0]
+            # Remove -100 prefix from channel ID for link
+            channel_id = str(DATA_STORE_CHANNEL)[4:] if str(DATA_STORE_CHANNEL).startswith('-100') else str(DATA_STORE_CHANNEL)
+            file_link = f"https://t.me/c/{channel_id}/{file_msg.id}"
             
             # Restore original LEECH_DUMP_CHAT
             Config.LEECH_DUMP_CHAT = original_leech_dump
