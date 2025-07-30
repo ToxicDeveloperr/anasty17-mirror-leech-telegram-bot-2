@@ -10,6 +10,7 @@ from ..helper.ext_utils.links_utils import is_url
 from ..core.mltb_client import TgClient
 from ..core.config_manager import Config
 from .mirror_leech import Mirror
+from ..helper.ext_utils.db_tracker import add_task, update_task_status, delete_task, get_task
 
 # Configure your channel IDs here (these are correct with -100 prefix)
 SOURCE_CHANNEL = -1002176533426
@@ -48,6 +49,9 @@ async def handle_channel_leech(client, message):
             is_leech=True,
         )
         
+        # Store task in MongoDB
+        await add_task(mirror.mid, url)
+        
         # Start the leech process
         await mirror.new_event()
         
@@ -61,18 +65,16 @@ async def handle_channel_leech(client, message):
             while task in task_dict:
                 await sleep(2)
         
-        # Get the last message from data store channel
-        last_msg = None
-        async for msg in client.iter_history(DATA_STORE_CHANNEL, limit=1):
-            last_msg = msg
-            break
-            
-        if not last_msg:
-            raise Exception("Could not find uploaded file message")
+        # Get task info from MongoDB
+        task_info = await get_task(mirror.mid)
+        if not task_info or 'file_message_id' not in task_info:
+            raise Exception("Upload information not found in database")
+        
+        file_message_id = task_info['file_message_id']
         
         # Generate file link
         channel_id = str(DATA_STORE_CHANNEL)[4:] 
-        file_link = f"https://t.me/c/{channel_id}/{last_msg.id}"
+        file_link = f"https://t.me/c/{channel_id}/{file_message_id}"
 
         # Create the final message
         final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
