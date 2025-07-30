@@ -18,6 +18,7 @@ DESTINATION_CHANNEL = -1002487065354
 
 async def handle_channel_leech(client, message):
     """Handle leech commands from the source channel"""
+    status_msg = None
     try:
         msg_parts = message.text.split(" ", 1)
         if len(msg_parts) != 2:
@@ -38,67 +39,68 @@ async def handle_channel_leech(client, message):
 
         # Store original leech chat
         original_dump_chat = Config.LEECH_DUMP_CHAT
-        try:
-            # Set data store channel as leech destination
-            Config.LEECH_DUMP_CHAT = str(DATA_STORE_CHANNEL)
+        Config.LEECH_DUMP_CHAT = str(DATA_STORE_CHANNEL)
             
-            # Create mirror instance
-            mirror = Mirror(
-                client,
-                message,
-                is_leech=True,
-            )
+        # Create mirror instance
+        mirror = Mirror(
+            client,
+            message,
+            is_leech=True,
+        )
+        
+        # Start the leech process
+        await mirror.new_event()
+        
+        # Wait for download and upload to complete
+        # We'll monitor task_dict for completion
+        from .. import task_dict, task_dict_lock
+        async with task_dict_lock:
+            task = task_dict.get(mirror.mid)
+        
+        if task:
+            while task in task_dict:
+                await sleep(2)
+        
+        # Get the last message from data store channel
+        last_msg = None
+        async for msg in client.iter_history(DATA_STORE_CHANNEL, limit=1):
+            last_msg = msg
+            break
             
-            # Start the leech process
-            await mirror.new_event()
-            
-            # Wait for download and upload to complete
-            # We'll monitor task_dict for completion
-            from .. import task_dict, task_dict_lock
-            async with task_dict_lock:
-                task = task_dict.get(mirror.mid)
-            
-            if task:
-                while task in task_dict:
-                    await sleep(2)
-            
-            # Get the last message from data store channel
-            async for msg in client.iter_history(DATA_STORE_CHANNEL, limit=1):
-                last_msg = msg
-                break
-                
-            if not last_msg:
-                raise Exception("Could not find uploaded file message")
-            
-            # Generate file link
-            channel_id = str(DATA_STORE_CHANNEL)[4:] 
-            file_link = f"https://t.me/c/{channel_id}/{last_msg.id}"
+        if not last_msg:
+            raise Exception("Could not find uploaded file message")
+        
+        # Generate file link
+        channel_id = str(DATA_STORE_CHANNEL)[4:] 
+        file_link = f"https://t.me/c/{channel_id}/{last_msg.id}"
 
-            # Create the final message
-            final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
-            
-            # Send to destination channel
-            await client.send_message(
-                DESTINATION_CHANNEL,
-                final_msg,
-                disable_web_page_preview=True
-            )
+        # Create the final message
+        final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
+        
+        # Send to destination channel
+        await client.send_message(
+            DESTINATION_CHANNEL,
+            final_msg,
+            disable_web_page_preview=True
+        )
 
-            # Clean up
+        # Clean up
+        if status_msg:
             await delete_message(status_msg)
-            await send_message(
-                message,
-                "✅ Successfully processed the URL and uploaded to channels!"
-            )
+        await send_message(
+            message,
+            "✅ Successfully processed the URL and uploaded to channels!"
+        )
 
-        except Exception as e:
-            LOGGER.error(str(e))
-            await send_message(message, f"❌ Error: {str(e)}")
-            if status_msg:
-                await delete_message(status_msg)
-        finally:
-            # Restore original leech chat
-            Config.LEECH_DUMP_CHAT = original_dump_chat
+    except Exception as e:
+        LOGGER.error(str(e))
+        await send_message(message, f"❌ Error: {str(e)}")
+        if status_msg:
+            await delete_message(status_msg)
+    
+    finally:
+        # Restore original leech chat
+        Config.LEECH_DUMP_CHAT = original_dump_chat
 
 def add_handler():
     """Add the custom leech handler to the bot"""
