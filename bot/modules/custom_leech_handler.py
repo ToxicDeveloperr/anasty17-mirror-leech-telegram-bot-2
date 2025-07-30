@@ -1,6 +1,6 @@
 from pyrogram import filters
 from ..helper.mirror_leech_utils.download_utils.direct_link_generator import direct_link_generator
-from ..helper.telegram_helper.message_utils import deleteMessage, sendMessage, get_tg_link_message
+from ..helper.telegram_helper.message_utils import delete_message, send_message, get_tg_link_message
 from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.ext_utils.bot_utils import get_content_type, is_url
@@ -23,17 +23,17 @@ class CustomLeechHandler:
         """Handle the custom leech workflow"""
         msg_parts = self.message.text.split(" ", 1)
         if len(msg_parts) != 2:
-            await sendMessage(self.message, "Please provide a URL with the leech command!")
+            await send_message(self.message, "Please provide a URL with the leech command!")
             return
 
         url = msg_parts[1].strip()
         
         if not is_url(url):
-            await sendMessage(self.message, "Please provide a valid URL!")
+            await send_message(self.message, "Please provide a valid URL!")
             return
 
         # Send status message
-        status_msg = await sendMessage(
+        status_msg = await send_message(
             self.message, 
             f"📥 Processing URL: {url}\n\nDownloading and uploading to Data Store Channel..."
         )
@@ -68,15 +68,15 @@ class CustomLeechHandler:
                 disable_web_page_preview=True
             )
 
-            await deleteMessage(status_msg)
-            await sendMessage(
+            await delete_message(status_msg)
+            await send_message(
                 self.message,
                 "✅ Successfully processed the URL and uploaded to channels!"
             )
 
         except Exception as e:
-            await sendMessage(self.message, f"❌ Error: {str(e)}")
-            await deleteMessage(status_msg)
+            await send_message(self.message, f"❌ Error: {str(e)}")
+            await delete_message(status_msg)
 
 def add_handler():
     """Add the custom leech handler to the bot"""
