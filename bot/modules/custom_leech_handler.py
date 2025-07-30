@@ -64,17 +64,29 @@ async def handle_channel_leech(client, message):
         if task:
             while task in task_dict:
                 await sleep(2)
-        
-        # Get task info from MongoDB
-        task_info = await get_task(mirror.mid)
-        if not task_info or 'file_message_id' not in task_info:
-            raise Exception("Upload information not found in database")
-        
-        file_message_id = task_info['file_message_id']
-        
-        # Generate file link
-        channel_id = str(DATA_STORE_CHANNEL)[4:] 
-        file_link = f"https://t.me/c/{channel_id}/{file_message_id}"
+                
+            # After task completes, wait a moment for the file to be fully processed
+            await sleep(3)
+            
+            # Get messages from the data store channel
+            messages = await client.get_messages(DATA_STORE_CHANNEL, limit=5)
+            
+            # Find the most recent file message
+            file_msg = None
+            for msg in messages:
+                if msg.document or msg.video or msg.audio or msg.photo:
+                    file_msg = msg
+                    break
+                    
+            if not file_msg:
+                raise Exception("Could not find uploaded file message")
+            
+            # Update task in MongoDB with file message ID
+            await update_task_status(mirror.mid, "completed", file_msg.id)
+            
+            # Generate file link
+            channel_id = str(DATA_STORE_CHANNEL)[4:] 
+            file_link = f"https://t.me/c/{channel_id}/{file_msg.id}"
 
         # Create the final message
         final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
