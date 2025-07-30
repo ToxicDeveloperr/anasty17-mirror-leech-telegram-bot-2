@@ -63,17 +63,14 @@ async def handle_channel_leech(client, message):
             # Wait briefly for the file to be processed
             await sleep(3)
             
-            # Get most recent message from data store channel
-            # Using get_history which is the correct method for getting recent messages
-            async for message in client.get_chat_history(DATA_STORE_CHANNEL, limit=1):
-                file_msg = message
-                break
-            else:
+            # Get the last message in the channel using getMessage
+            last_msg = await client.get_messages(DATA_STORE_CHANNEL, -1)
+            if not last_msg:
                 raise Exception("Could not find uploaded file message")
-            
+                
             # Generate file link
             channel_id = str(DATA_STORE_CHANNEL)[4:] 
-            file_link = f"https://t.me/c/{channel_id}/{file_msg.id}"
+            file_link = f"https://t.me/c/{channel_id}/{last_msg.id}"
 
         # Create the final message
         final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
