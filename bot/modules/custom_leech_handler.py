@@ -12,9 +12,9 @@ from ..core.mltb_client import TgClient
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Configure your channel IDs here
-SOURCE_CHANNEL = -100176533426  # Replace with your source channel ID (removed extra 2)
-DATA_STORE_CHANNEL = -100464896968  # Replace with your data store channel ID 
-DESTINATION_CHANNEL = -100487065354  # Replace with your destination channel ID
+SOURCE_CHANNEL = -1002176533426  # Replace with your source channel ID (removed extra 2)
+DATA_STORE_CHANNEL = -1002464896968  # Replace with your data store channel ID 
+DESTINATION_CHANNEL = -1002487065354  # Replace with your destination channel ID
 
 class CustomLeechHandler:
     def __init__(self, client, message):
