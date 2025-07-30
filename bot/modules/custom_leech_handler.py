@@ -1,9 +1,11 @@
 from pyrogram import filters
+from pyrogram.handlers import MessageHandler
 from ..helper.mirror_leech_utils.download_utils.direct_link_generator import direct_link_generator
 from ..helper.telegram_helper.message_utils import delete_message, send_message, get_tg_link_message
 from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.bot_commands import BotCommands
-from ..helper.ext_utils.bot_utils import get_content_type, is_url
+from ..helper.ext_utils.bot_utils import get_content_type
+from ..helper.ext_utils.links_utils import is_url
 from .. import bot_loop
 from .mirror_leech import Mirror
 from ..core.mltb_client import TgClient
@@ -39,6 +41,11 @@ class CustomLeechHandler:
         )
 
         try:
+            # Set LEECH_DUMP_CHAT in config for data store channel
+            from ..core.config_manager import Config
+            original_leech_dump = Config.LEECH_DUMP_CHAT
+            Config.LEECH_DUMP_CHAT = str(DATA_STORE_CHANNEL)
+
             # Create Mirror instance with leech=True to upload to Telegram
             mirror_handler = Mirror(
                 self.client,
@@ -46,17 +53,23 @@ class CustomLeechHandler:
                 is_leech=True
             )
             
-            # Override the default LEECH_DUMP_CHAT to our DATA_STORE_CHANNEL
-            mirror_handler.user_dict = {"LEECH_DUMP_CHAT": DATA_STORE_CHANNEL}
-            
             # Start the leech process
             await mirror_handler.new_event()
             
-            # Wait for the file to be uploaded and get its message link
-            # Note: This requires implementing a callback system or message tracking
-            # For now we'll use a placeholder
-            file_msg = await self.client.get_messages(DATA_STORE_CHANNEL, -1)
-            file_link = await get_tg_link_message(file_msg)
+            # Wait for the file to be uploaded
+            import asyncio
+            await asyncio.sleep(5)  # Give some time for the upload to complete
+            
+            # Get the last message from data store channel
+            messages = await self.client.get_messages(DATA_STORE_CHANNEL, limit=1)
+            if not messages or len(messages) == 0:
+                raise Exception("Failed to get uploaded file message")
+                
+            file_msg = messages[0]
+            file_link = f"https://t.me/c/{str(DATA_STORE_CHANNEL)[4:]}/{file_msg.id}"
+            
+            # Restore original LEECH_DUMP_CHAT
+            Config.LEECH_DUMP_CHAT = original_leech_dump
 
             # Create the final message for destination channel
             final_msg = f"🔗 Original URL: {url}\n📁 File Link: {file_link}"
