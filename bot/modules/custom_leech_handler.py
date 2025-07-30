@@ -10,7 +10,6 @@ from ..helper.ext_utils.links_utils import is_url
 from ..core.mltb_client import TgClient
 from ..core.config_manager import Config
 from .mirror_leech import Mirror
-from ..helper.ext_utils.db_tracker import add_task, update_task_status, delete_task, get_task
 
 # Configure your channel IDs here (these are correct with -100 prefix)
 SOURCE_CHANNEL = -1002176533426
@@ -49,14 +48,10 @@ async def handle_channel_leech(client, message):
             is_leech=True,
         )
         
-        # Store task in MongoDB
-        await add_task(mirror.mid, url)
-        
         # Start the leech process
         await mirror.new_event()
         
         # Wait for download and upload to complete
-        # We'll monitor task_dict for completion
         from .. import task_dict, task_dict_lock
         async with task_dict_lock:
             task = task_dict.get(mirror.mid)
@@ -64,25 +59,16 @@ async def handle_channel_leech(client, message):
         if task:
             while task in task_dict:
                 await sleep(2)
-                
-            # After task completes, wait a moment for the file to be fully processed
+            
+            # Wait briefly for the file to be processed
             await sleep(3)
             
-            # Get messages from the data store channel
-            messages = await client.get_messages(DATA_STORE_CHANNEL, limit=5)
-            
-            # Find the most recent file message
-            file_msg = None
-            for msg in messages:
-                if msg.document or msg.video or msg.audio or msg.photo:
-                    file_msg = msg
-                    break
-                    
-            if not file_msg:
+            # Get most recent message from data store channel
+            messages = await client.get_messages(DATA_STORE_CHANNEL, limit=1)
+            if not messages or not messages[0]:
                 raise Exception("Could not find uploaded file message")
-            
-            # Update task in MongoDB with file message ID
-            await update_task_status(mirror.mid, "completed", file_msg.id)
+                
+            file_msg = messages[0]
             
             # Generate file link
             channel_id = str(DATA_STORE_CHANNEL)[4:] 
